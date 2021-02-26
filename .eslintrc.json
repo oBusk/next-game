@@ -6,10 +6,10 @@
     "extends": [
         "eslint:recommended",
         "plugin:react/recommended",
-        "plugin:prettier/recommended",
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:prettier/recommended"
     ],
     "parserOptions": {
         "project": "./tsconfig.json"
@@ -20,9 +20,7 @@
         }
     },
     "rules": {
-        "@typescript-eslint/require-await": 0,
-        "react/react-in-jsx-scope": 0,
-        "react/prop-types": 0,
-        "react/no-unescaped-entities": 0
+        "react/react-in-jsx-scope": 0, // not needed in next.js
+        "@typescript-eslint/explicit-module-boundary-types": 0
     }
 }
