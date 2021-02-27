@@ -2,8 +2,15 @@
 // TypeScript Version: 4.2
 
 declare module "react-game-engine" {
-    import * as React from "react";
-    import { StyleProp, ViewStyle, ScaledSize } from "react-native";
+    import {
+        Component,
+        CSSProperties,
+        DragEvent,
+        KeyboardEvent,
+        MouseEvent,
+        TouchEvent,
+        WheelEvent,
+    } from "react";
 
     interface DefaultRendererOptions {
         state: any;
@@ -33,32 +40,96 @@ declare module "react-game-engine" {
         previousDelta: number;
     }
 
+    export interface Input<T = Element> {
+        name: string;
+        payload: SyntheticEvent<T, Event>;
+    }
+
+    export interface MouseInput<T = Element> extends Input {
+        name:
+            | "onClick"
+            | "onDoubleClick"
+            | "onContextMenu"
+            | "onMouseDown"
+            | "onMouseEnter"
+            | "onMouseLeave"
+            | "onMouseMove"
+            | "onMouseOut"
+            | "onMouseOver"
+            | "onMouseUp";
+        payload: MouseEvent<T>;
+    }
+
+    export interface DragInput<T = Element> extends Input {
+        name:
+            | "onDrag"
+            | "onDragEnd"
+            | "onDragEnter"
+            | "onDragExit"
+            | "onDragLeave"
+            | "onDragOver"
+            | "onDragStart"
+            | "onDrop";
+        payload: DragEvent<T>;
+    }
+
+    export interface WheelInput<T = Element> extends Input {
+        name: "onWheel";
+        payload: WheelEvent<T>;
+    }
+
+    export interface TouchInput<T = Element> extends Input {
+        name: "onTouchCancel" | "onTouchEnd" | "onTouchMove" | "onTouchStart";
+        payload: TouchEvent<T>;
+    }
+
+    export interface KeyInput<T = Element> extends Input {
+        name: "onKeyDown" | "onKeyPress" | "onKeyUp";
+        payload: KeyboardEvent<T>;
+    }
+
+    export type AllInput<T = Element> =
+        | MouseInput<T>
+        | DragInput<T>
+        | WheelInput<T>
+        | TouchInput<T>
+        | KeyInput<T>;
+
     export interface GameEngineUpdateEventOptionType {
         dispatch: (event: any) => void;
         events: Array<any>;
         screen: ScaledSize;
         time: TimeUpdate;
-        touches: Array<TouchEvent>;
+        input: Array<AllInput>;
+    }
+
+    export interface Entity {
+        renderer: ReactElement;
+        [key: string]: unknown;
+    }
+
+    export interface Entities {
+        [uniqueId: string]: Entity;
     }
 
     export type GameEngineSystem = (
-        entities: any,
+        entities: Entities,
         update: GameEngineUpdateEventOptionType,
-    ) => any;
+    ) => Record<string, Entity>;
 
     export interface GameEngineProperties {
-        systems?: any[];
-        entities?: {} | Promise<any>;
+        systems?: GameEngineSystem[];
+        entities?: Entities | Promise<Entities>;
         renderer?: any;
         touchProcessor?: any;
         timer?: any;
         running?: boolean;
         onEvent?: any;
-        style?: StyleProp<ViewStyle>;
-        children?: React.ReactNode;
+        style?: CSSProperties;
+        children?: ReactNode;
     }
 
-    export class GameEngine extends React.Component<GameEngineProperties> {}
+    export class GameEngine extends Component<GameEngineProperties> {}
 
     export type TouchEventType =
         | "start"
@@ -101,9 +172,9 @@ declare module "react-game-engine" {
         timer?: any;
         running?: boolean;
         onUpdate?: (args: GameLoopUpdateEventOptionType) => void;
-        style?: StyleProp<ViewStyle>;
-        children?: React.ReactNode;
+        style?: CSSProperties;
+        children?: ReactNode;
     }
 
-    export class GameLoop extends React.Component<GameLoopProperties> {}
+    export class GameLoop extends Component<GameLoopProperties> {}
 }
