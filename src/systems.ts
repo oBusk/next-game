@@ -1,19 +1,42 @@
-import { GameEngineSystem, MouseInput } from "react-game-engine";
+import { Entity, GameEngineSystem } from "react-game-engine";
+import { Box } from "./renderers";
 
 const MoveBox: GameEngineSystem = (entities, { input }) => {
-    //-- I'm choosing to update the game state (entities) directly for the sake of brevity and simplicity.
-    //-- There's nothing stopping you from treating the game state as immutable and returning a copy..
-    //-- Example: return { ...entities, t.id: { UPDATED COMPONENTS }};
-    //-- That said, it's probably worth considering performance implications in either case.
+    const box1 = entities["box1"] as Entity<typeof Box>;
 
-    const { payload } =
-        input.find((x): x is MouseInput => x.name === "onMouseDown") || {};
+    console.log(input.map((v) => v.name));
 
-    if (payload) {
-        const box1 = entities["box1"];
-
-        box1.x = payload.pageX;
-        box1.y = payload.pageY;
+    for (const i of input) {
+        switch (i.name) {
+            case "onMouseDown":
+                box1.x = i.payload.pageX;
+                box1.y = i.payload.pageY;
+                break;
+            case "onKeyPress":
+                switch (i.payload.key) {
+                    case "ArrowUp":
+                    case "w":
+                        box1.y = box1.y - 10;
+                        break;
+                    case "ArrowDown":
+                    case "s":
+                        box1.y = box1.y + 10;
+                        break;
+                    case "ArrowLeft":
+                    case "a":
+                        box1.x = box1.x - 10;
+                        break;
+                    case "ArrowRight":
+                    case "d":
+                        box1.x = box1.x + 10;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            default:
+                break;
+        }
     }
 
     return entities;

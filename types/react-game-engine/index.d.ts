@@ -4,6 +4,7 @@
 declare module "react-game-engine" {
     import {
         Component,
+        ComponentPropsWithoutRef,
         CSSProperties,
         DragEvent,
         KeyboardEvent,
@@ -12,6 +13,7 @@ declare module "react-game-engine" {
         ReactNode,
         TouchEvent,
         WheelEvent,
+        ElementType,
     } from "react";
 
     /** A function that receives the entities and needs to render them on every tick. */
@@ -116,10 +118,9 @@ declare module "react-game-engine" {
         input: AllInput[];
     }
 
-    export interface Entity {
+    export type Entity<C extends ElementType> = ComponentPropsWithoutRef<C> & {
         renderer?: ReactElement;
-        [propName: string]: unknown;
-    }
+    };
 
     export interface Entities {
         [uniqueId: string]: Entity;
@@ -128,7 +129,7 @@ declare module "react-game-engine" {
     export type GameEngineSystem = (
         entities: Entities,
         update: GameEngineUpdateEventOptionType,
-    ) => Record<string, Entity>;
+    ) => Entities;
 
     export interface GameEngineProperties {
         /** An array of functions to be called on every tick. */

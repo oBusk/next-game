@@ -37,5 +37,9 @@
         "lint-staged": "^10.5.4",
         "prettier": "^2.2.1",
         "typescript": "^4.2.2"
+    },
+    "volta": {
+        "node": "15.10.0",
+        "npm": "7.6.0"
     }
 }
