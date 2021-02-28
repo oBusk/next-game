@@ -8,36 +8,49 @@ declare module "react-game-engine" {
         DragEvent,
         KeyboardEvent,
         MouseEvent,
+        ReactElement,
+        ReactNode,
         TouchEvent,
         WheelEvent,
     } from "react";
 
-    interface DefaultRendererOptions {
-        state: any;
-        screen: ScaledSize;
+    /** A function that receives the entities and needs to render them on every tick. */
+    export interface Renderer {
+        (entities: null | Entities, window: Window): JSX.Element[];
     }
 
     export function DefaultRenderer(
-        defaultRendererOptions: DefaultRendererOptions,
-    ): any;
+        entities: null | Entities,
+        window: Window,
+    ): JSX.Element[];
 
-    export class DefaultTimer {}
-
-    interface TouchProcessorOptions {
-        triggerPressEventBefore: number;
-        triggerLongPressEventAfter: number;
-        moveThreshold: number;
+    export interface TimerSubscriber {
+        (time: number): void;
     }
 
-    export function DefaultTouchProcessor(
-        touchProcessorOptions?: TouchProcessorOptions,
-    ): any;
+    /** An object that can be used to override the default timer behavior */
+    export interface Timer {
+        start(): void;
+        stop(): void;
+        subscribe(callback: TimerSubscriber): void;
+        unsubscribe(callback: TimerSubscriber): void;
+    }
+
+    export class DefaultTimer implements Timer {}
 
     export interface TimeUpdate {
         current: number;
         delta: number;
         previous: number;
         previousDelta: number;
+    }
+
+    export interface DispatchEvent {
+        type: string;
+    }
+
+    export interface Dispatch {
+        (event: DispatchEvent): void;
     }
 
     export interface Input<T = Element> {
@@ -96,16 +109,16 @@ declare module "react-game-engine" {
         | KeyInput<T>;
 
     export interface GameEngineUpdateEventOptionType {
-        dispatch: (event: any) => void;
-        events: Array<any>;
-        screen: ScaledSize;
+        dispatch: Dispatch;
+        events: DispatchEvent[];
+        window: Window;
         time: TimeUpdate;
-        input: Array<AllInput>;
+        input: AllInput[];
     }
 
     export interface Entity {
-        renderer: ReactElement;
-        [key: string]: unknown;
+        renderer?: ReactElement;
+        [propName: string]: unknown;
     }
 
     export interface Entities {
@@ -118,58 +131,55 @@ declare module "react-game-engine" {
     ) => Record<string, Entity>;
 
     export interface GameEngineProperties {
+        /** An array of functions to be called on every tick. */
         systems?: GameEngineSystem[];
+        /**
+         * An object containing your game's initial entities. This can also be a Promise
+         * that resolves to an object containing your entities. This is useful when you need
+         * to asynchronously load a texture or other assets during the creation of your
+         * entities or level.
+         */
         entities?: Entities | Promise<Entities>;
-        renderer?: any;
-        touchProcessor?: any;
-        timer?: any;
+        /** A function that receives the entities and needs to render them on every tick */
+        renderer?: Renderer;
+        /** An object that can be used to override the default timer behavior */
+        timer?: Timer;
+        /** A boolean that can be used to control whether the game loop is running or not */
         running?: boolean;
-        onEvent?: any;
+        /** A callback for being notified when events are dispatched */
+        onEvent?: Dispatch;
+        /** An object containing styles for the root container */
         style?: CSSProperties;
         children?: ReactNode;
     }
 
-    export class GameEngine extends Component<GameEngineProperties> {}
-
-    export type TouchEventType =
-        | "start"
-        | "end"
-        | "move"
-        | "press"
-        | "long-press";
-
-    export interface TouchEvent {
-        event: {
-            changedTouches: Array<TouchEvent>;
-            identifier: number;
-            locationX: number;
-            locationY: number;
-            pageX: number;
-            pageY: number;
-            target: number;
-            timestamp: number;
-            touches: Array<TouchEvent>;
-        };
-        id: number;
-        type: TouchEventType;
-        delta?: {
-            locationX: number;
-            locationY: number;
-            pageX: number;
-            pageY: number;
-            timestamp: number;
-        };
+    export class GameEngine extends Component<GameEngineProperties> {
+        /** Stop the game loop	 */
+        stop(): void;
+        /** Start the game loop.	 */
+        start(): void;
+        /**
+         * A method that can be called to update your game with new entities. Can be
+         * useful for level switching etc. You can also pass a Promise that resolves
+         * to an entities object into this method.
+         **/
+        swap(entitites: Entities | Promise<Entities>): void;
+        /**
+         * A method that can be called to fire events after the currenty frame
+         * completed. The event will be received by ALL the systems and any
+         * `onEvent` callbacks
+         */
+        dispatch: Dispatch;
     }
 
     interface GameLoopUpdateEventOptionType {
-        touches: TouchEvent[];
-        screen: ScaledSize;
+        input: AllInput[];
+        window: Window;
         time: TimeUpdate;
     }
 
     export interface GameLoopProperties {
-        touchProcessor?: any;
-        timer?: any;
+        timer?: Timer;
         running?: boolean;
         onUpdate?: (args: GameLoopUpdateEventOptionType) => void;
         style?: CSSProperties;
